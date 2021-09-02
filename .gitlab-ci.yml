@@ -1,0 +1,44 @@
+variables:
+  REPO: hub.eazytec-cloud.com
+  NAMESPACE: apm
+  IMAGE: codecounter
+  OKD: osr.eazytec.intra:8443
+  OKDTOKEN: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZXZlbG9wIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImJ1aWxkZXItdG9rZW4tazJuMmgiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiYnVpbGRlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjhmOTkwYTkyLTg0Y2UtMTFlOC05ZjBhLTAwNTA1NmI0YjA1NCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZXZlbG9wOmJ1aWxkZXIifQ.c98pI_a4ZRaS8bzzKBvzBXYMphL-cwS8FTLfoik5bRKBcOHrxZvMaEWbDXCm6HWPeuiYZwQ1h2KFyU_rBqsu5t_IGYFw7oARHPO66YjVoz48HMlVNai77MPhdQuXVB6ZjcOjWqvFbm8cHYBG2_MgL0uhm2AiRGPXov7pmsKEgplBDLPQFO1OpgO8dLjQaS7TXncNCIjcdvIU-IDXiJH0nXYHEUad-c7qYw_4-Hqgu83lgXat10BfLQVOIguMPJWEF0sIZvlHwLrCzKl16RNu83YPp84g53ELRUlLF4W3HYqWLiXbr99xpQYzm5AiQjDHXOY6JoYT7V6--bq3zth7cA
+  PROJECT: codecounter
+  IMAGESTREAM: codecounter
+
+stages:
+  - build
+  - push
+  - deploy
+
+gobuild:
+  image: hub.eazytec-cloud.com/devops/golang:1
+  stage: build
+  script:
+    - CGO_ENABLED=0 go build -o ./dist/server
+  artifacts:
+    paths:
+      - dist/
+
+containerize:
+  image: hub.eazytec-cloud.com/devops/docker:18
+  services:
+    - name: hub.eazytec-cloud.com/devops/docker:18-dind
+      alias: docker
+  before_script:
+    - docker info
+    - docker login -p 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTk4NjU0MzgsImlhdCI6MTYyMjEwNTQzOCwiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6MjcwMjY2LCJwaWQiOjQwLCJhY2Nlc3MiOlt7IlJlc291cmNlIjoiL3Byb2plY3QvNDAvcmVwb3NpdG9yeSIsIkFjdGlvbiI6InB1c2giLCJFZmZlY3QiOiIifSx7IlJlc291cmNlIjoiL3Byb2plY3QvNDAvaGVsbS1jaGFydCIsIkFjdGlvbiI6InJlYWQiLCJFZmZlY3QiOiIifSx7IlJlc291cmNlIjoiL3Byb2plY3QvNDAvaGVsbS1jaGFydC12ZXJzaW9uIiwiQWN0aW9uIjoiY3JlYXRlIiwiRWZmZWN0IjoiIn1dfQ.YbmfJlPOb_QjQEKbfut-7CTcY65KrrxbCKRPN3AsDaF6NgqjKs6o0VHXlO8i7vWX2so7LYbU5Gz8u3OIpBtoO_I9UOMvFH4OY5PJVCO1QG1kWAXxpkAwCabfusx8J5p-uMVy4mOKLdv6qVhLgBpXbuF8vc3x4OCYObYe0r1lvVYIk2JACHBiYjuuTMyqb3taUiVomo5b1HvR0fykA-rG3Q18gy8PA-pFJnLjeVo1sNaDX3lJK2B_CN72gcN6W9Jwnux5fPOgakgniVyQ0SgP_sCSE-M9FfIG6FQRXUVAwxIXD2HZbBVWdGDJlR4vKKacdi4yfTkmnB-OnuON_3HhDjcMkR_K3p-s7L26Z2zxz6j296bLeXaEZgFnGHKe_WETaZVfzlSctzswXociMUUZXhYOXSInbMY4BUkAU1EB94pIeddNpa7vg0CxbpD9zUpive_1hTvtXraAivmMEqRK1RvcQUpgUWijgA7PMQOr61QR_NAGF37965ixi5BhkvZqZKgh7ySWFtnBlSj5I9slP0UZATkA-aqPqsRbCB0YLYeHDp6oz9JppC6ZXYjXR-P0IbrP7IBch_OVqXUEyEzfqhYCSXf8fskJtbPwCA11rniVj9xjV8EsvfZcHLo544LnduZoF2b3_UoeeorkWMqwigwKii8qeKoQ4gnDTWMzb70' -u 'robot$feecounter' ${REPO}
+  stage: push
+  script:
+    - docker build --pull -t ${REPO}/${NAMESPACE}/${IMAGE}:${CI_COMMIT_REF_SLUG} .
+    - docker push ${REPO}/${NAMESPACE}/${IMAGE}:${CI_COMMIT_REF_SLUG}
+
+update:
+  image: hub.eazytec-cloud.com/devops/oc:3.11
+  before_script:
+    - oc login --token "${OKDTOKEN}" --insecure-skip-tls-verify ${OKD}
+    - oc project ${PROJECT}
+  stage: deploy
+  script:
+    - oc import-image ${IMAGESTREAM}:${CI_COMMIT_REF_SLUG} --from=${REPO}/${NAMESPACE}/${IMAGE}:${CI_COMMIT_REF_SLUG} --confirm

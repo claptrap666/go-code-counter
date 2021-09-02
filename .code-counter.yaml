@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  secret: P!pboy123
+db:
+  host: 127.0.0.1
+  port: 5432
+  user: zhanglv
+  password: 114416
+  database: codecounter
+oauth:
+  provider: https://auth.eazytec-cloud.com/auth/realms/devops
+  client-id: codecounter
+  client-secret: 620ca76b-1ab1-4f8d-a2c6-7612cc43b0e9
+  redirect-url: http://localhost:8080/oauth_callback
